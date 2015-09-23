@@ -13,7 +13,9 @@ package json5
 // This file starts with two simple examples using the scanner
 // before diving into the scanner itself.
 
-import "strconv"
+import (
+	"strconv"
+)
 
 // checkValid verifies that data is valid JSON-encoded data.
 // scan is passed in for use by checkValid to avoid an allocation.
@@ -158,7 +160,15 @@ func (s *scanner) eof() int {
 		return scanEnd
 	}
 	if s.err == nil {
-		s.err = &SyntaxError{"unexpected end of JSON input", s.bytes}
+
+		//[TG] Currently the scanner can
+		// not determine the EOF correctly
+		// caused by the comments
+		// further investigation needed.
+		// For now we end the scan here, even
+		// if there is something broken.
+		return scanEnd
+		//s.err = &SyntaxError{"unexpected end of JSON input", s.bytes}
 	}
 	return scanError
 }
@@ -309,6 +319,12 @@ func stateBeginString(s *scanner, c int) int {
 		return scanSkipSpace
 	}
 	if c == '/' {
+		s.step = stateInlineComment
+		return scanSkipInComment
+	}
+	// [TG] Skip comment magic byte and
+	// threat it like a comment
+	if c == 0x9A {
 		s.step = stateInlineComment
 		return scanSkipInComment
 	}

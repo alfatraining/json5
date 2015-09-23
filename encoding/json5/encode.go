@@ -577,6 +577,14 @@ func (se *structEncoder) encode(e *encodeState, v reflect.Value, quoted bool) {
 		} else {
 			e.WriteByte(',')
 		}
+
+		// [TG] Wrap magic bytes around
+		// the comment to indent it later
+		// correctly
+		e.WriteByte(0x9A)
+		e.WriteString("// " + f.comment)
+		e.WriteByte(0x9B)
+
 		e.string(f.name)
 		e.WriteByte(':')
 		se.fieldEncs[i](e, fv, f.quoted)
@@ -936,6 +944,8 @@ type field struct {
 	typ       reflect.Type
 	omitEmpty bool
 	quoted    bool
+
+	comment   string
 }
 
 func fillField(f field) field {
@@ -1037,6 +1047,8 @@ func typeFields(t reflect.Type) []field {
 					ft = ft.Elem()
 				}
 
+				comment_tag := sf.Tag.Get("comment")
+
 				// Record found field and index sequence.
 				if name != "" || !sf.Anonymous || ft.Kind() != reflect.Struct {
 					tagged := name != ""
@@ -1050,6 +1062,7 @@ func typeFields(t reflect.Type) []field {
 						typ:       ft,
 						omitEmpty: opts.Contains("omitempty"),
 						quoted:    opts.Contains("string"),
+						comment:   comment_tag,
 					}))
 					if count[f.typ] > 1 {
 						// If there were multiple instances, add a second,

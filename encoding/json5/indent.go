@@ -107,6 +107,10 @@ func Indent(dst *bytes.Buffer, src []byte, prefix, indent string) error {
 			needIndent = true
 			dst.WriteByte(c)
 
+		case 0x9A, 0x9B:
+			// [TG] Add indention to comments
+			newline(dst, prefix, indent, depth)
+
 		case ',':
 			dst.WriteByte(c)
 			newline(dst, prefix, indent, depth)
