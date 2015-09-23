@@ -1,4 +1,4 @@
-json5 implemented by golang
+Extended json with json5 flavour for go
 ================
 
 Copied from yosuke-furukawa's amazing [json5](https://github.com/yosuke-furukawa/json5) github project.
